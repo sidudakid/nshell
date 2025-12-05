@@ -6,6 +6,8 @@
 #include <stdbool.h>
 
 
+void about(void);
+
 int nh_cd(char **args){
         if (args[1]==NULL){
                 perror("nsh expected a argument with cd");
@@ -40,6 +42,7 @@ void history_func(){
 
 void shell_function(){
     #define MAX_ARGS 64
+    char* user = getenv("USER"); 
     char* input = malloc(1024*sizeof(char));
     if (!input) { perror("malloc"); exit(1); }
 
@@ -51,7 +54,9 @@ void shell_function(){
 	if (geteuid() == 0) {
 		printf("\033[0;31m root# ➜ \033[0m");
     	} else {
-        	printf("\033[1;34m user$ ➜ \033[0m");
+        	//printf("\033[1;34m%s ➜ \033[0m", user);
+          printf("\033[1;34m%s > \033[0m", user);
+
     	}
         if (!fgets(input, 1024, stdin)) break;
         input[strcspn(input, "\n")] = '\0';
@@ -98,11 +103,29 @@ void shell_function(){
             waitpid(pid, &status, 0);
         }
     }
-    free(input);
+    free(input);    
 }
 
 
 int main(){
-	shell_function();
+  const char* home = getenv("HOME");
+  char fname[256];
+  sprintf(fname, "%s/.nshistory", home);
+  if (access(fname, F_OK) == 0) {
+      shell_function();
+    } else {
+	    about();
+    }
 	return 0;
+}
+
+
+
+void about(){
+  char* about="""Nshell is a lightweight, customizable command-line shell written in C. It provides basic shell functionality, allowing you to execute commands, manage processes, and navigate the filesystem. Nshell is designed to be simple, efficient, and extendable, with features you can customize and build upon.""";
+  char* creator = "sidudakid";
+  char* version = "1.0.1";
+  char* last_msg = "for help with any type help command.";
+  printf("%s\n Created by: %s \n Version: %s \n %s", about, creator, version, last_msg);
+  shell_function();
 }
