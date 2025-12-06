@@ -13,6 +13,9 @@ int nh_cd(char **args){
   }
   return 1;
 }
+char* hostname(){
+ return "NONE";
+}
 
 void history_func(){
   char histfile[1024];
@@ -40,6 +43,15 @@ void shell_function(){
   #define MAX_ARGS 64
   char* user = getenv("USER"); 
   char* input = malloc(1024*sizeof(char));
+  FILE *hostfile = fopen("/etc/hostname", "r");
+  char hostname[100];
+  if (hostfile) {
+   fgets(hostname, 10, hostfile);
+   fclose(hostfile);
+  }
+ 
+
+
   if (!input) { perror("malloc"); exit(1); }
     char histfile[1024];
     const char* home = getenv("HOME");
@@ -47,12 +59,13 @@ void shell_function(){
 
     while (1) {
       if (geteuid() == 0) {
-		  printf("\033[0;31m root# ➜ \033[0m");
+		    //printf("\033[0;31m root# ➜ \033[0m");
+        printf("\033[1;31m%s@%s #> \033[0m", user, hostname);
     	} else {
         //printf("\033[1;34m%s ➜ \033[0m", user);
-        printf("\033[1;34m%s > \033[0m", user);
+        printf("\033[1;34m%s@%s > \033[0m", user, hostname);
     	}
-        if (!fgets(input, 1024, stdin)) break;
+      if (!fgets(input, 1024, stdin)) break;
         input[strcspn(input, "\n")] = '\0';
 
         if (input[0]=='\0') continue;
